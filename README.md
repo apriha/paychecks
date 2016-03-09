@@ -39,6 +39,4 @@ Editing the constants as indicated in the code block below results in a workbook
 
 A screenshot of the generated workbook:
 
-
-
-This example workbook is also included in the *examples* directory.
+![paychecks workbook example](https://raw.githubusercontent.com/apriha/paychecks/master/example.jpg)
