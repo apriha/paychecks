@@ -326,31 +326,31 @@ End Sub
 Sub add_pie_charts(PAYCHECK_ROWS As Integer)
     ' Add dynamic pie charts - one for Pay Source, one for Pay Destination
     
-    Dim Workbook As String
+    Dim workbook_name As String
     
-    Workbook = ActiveWorkbook.Name
-    
-    ActiveSheet.Shapes.AddChart.Select
-    Call format_pie_chart(Workbook, ActiveChart, "Pay Source", "SourcePieData", "SourcePieLabels")
+    workbook_name = ActiveWorkbook.Name
     
     ActiveSheet.Shapes.AddChart.Select
-    Call format_pie_chart(Workbook, ActiveChart, "Pay Destination", "DestinationPieData", "DestinationPieLabels")
+    Call format_pie_chart(workbook_name, ActiveChart, "Pay Source", "SourcePieData", "SourcePieLabels")
+    
+    ActiveSheet.Shapes.AddChart.Select
+    Call format_pie_chart(workbook_name, ActiveChart, "Pay Destination", "DestinationPieData", "DestinationPieLabels")
 End Sub
 
-Sub format_pie_chart(Workbook As String, chart As chart, title As String, data As String, labels As String)
+Sub format_pie_chart(workbook_name As String, active_chart As Chart, title As String, data As String, labels As String)
     ' Jazz up the pie chart with data, labels, and formatting
     
-    chart.ChartType = xlPie
-    chart.HasLegend = False
-    chart.PlotVisibleOnly = False
-    chart.SeriesCollection.add (Worksheets("Sheet1").Range(data))
-    chart.SeriesCollection(1).Name = title
-    chart.SeriesCollection(1).Values = (Workbook & "!" & data)
-    chart.SeriesCollection(1).XValues = (Workbook & "!" & labels)
-    chart.SeriesCollection(1).HasDataLabels = True
-    chart.SeriesCollection(1).DataLabels.ShowValue = False
-    chart.SeriesCollection(1).DataLabels.ShowCategoryName = True
-    chart.SeriesCollection(1).DataLabels.ShowPercentage = True
-    chart.SeriesCollection(1).DataLabels.NumberFormat = "0.00%"
-    chart.SeriesCollection(1).HasLeaderLines = True
+    active_chart.ChartType = xlPie
+    active_chart.HasLegend = False
+    active_chart.PlotVisibleOnly = False
+    active_chart.SeriesCollection.add (Worksheets("Sheet1").Range(data))
+    active_chart.SeriesCollection(1).Name = title
+    active_chart.SeriesCollection(1).Values = (workbook_name & "!" & data)
+    active_chart.SeriesCollection(1).XValues = (workbook_name & "!" & labels)
+    active_chart.SeriesCollection(1).HasDataLabels = True
+    active_chart.SeriesCollection(1).DataLabels.ShowValue = False
+    active_chart.SeriesCollection(1).DataLabels.ShowCategoryName = True
+    active_chart.SeriesCollection(1).DataLabels.ShowPercentage = True
+    active_chart.SeriesCollection(1).DataLabels.NumberFormat = "0.00%"
+    active_chart.SeriesCollection(1).HasLeaderLines = True
 End Sub
