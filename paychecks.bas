@@ -8,12 +8,23 @@ Option Explicit
 '
 ' Usage: Import into Excel's Visual Basic Editor and run Main()
 '
-' Author: apriha
-' Date: March 8, 2016
-' License: GNU GENERAL PUBLIC LICENSE (see LICENSE file)
+' Copyright (C) 2016, Andrew Riha
+'
+' This program is free software: you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation, either version 3 of the License, or
+' (at your option) any later version.
+'
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License
+' along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ' *****************************************************************************
 
-Sub Main()
+Public Sub Main()
 ' Generates a workbook with dynamic pie charts for tracking paychecks
 ' Note: May need to close all workbooks before running
 
@@ -33,7 +44,7 @@ Sub Main()
     Dim last_column As Integer  ' last column of data
     
     'Create workbook
-    Workbooks.add
+    Workbooks.Add
     
     last_column = add_columns(EARNINGS_COLUMNS, BEFORE_TAX_COLUMNS, AFTER_TAX_COLUMNS, TAX_COLUMNS)
     Call add_paycheck_rows(PAYCHECK_ROWS)
@@ -42,7 +53,7 @@ Sub Main()
     Call add_pie_charts(PAYCHECK_ROWS)
 End Sub
 
-Function add_columns(EARNINGS_COLUMNS As Integer, BEFORE_TAX_COLUMNS As Integer, AFTER_TAX_COLUMNS As Integer, TAX_COLUMNS As Integer) As Integer
+Private Function add_columns(EARNINGS_COLUMNS As Integer, BEFORE_TAX_COLUMNS As Integer, AFTER_TAX_COLUMNS As Integer, TAX_COLUMNS As Integer) As Integer
     ' Add paycheck column titles to workbook; add_column_group does the heavy lifting for each group
     '
     '   Inputs:
@@ -75,7 +86,7 @@ Function add_columns(EARNINGS_COLUMNS As Integer, BEFORE_TAX_COLUMNS As Integer,
     add_columns = address_net_pay.Column
 End Function
 
-Function add_column_group(address_previous_total As Range, base_title As String, columns As Integer) As Range
+Private Function add_column_group(address_previous_total As Range, base_title As String, columns As Integer) As Range
     ' Add paycheck columns to workbook, group columns of same type, and add total formula for groups
     '
     '   Inputs:
@@ -116,7 +127,7 @@ Function add_column_group(address_previous_total As Range, base_title As String,
     Set add_column_group = ActiveCell
 End Function
 
-Sub group_titles(base_title As String, address_group_start As String, address_group_end As String)
+Private Sub group_titles(base_title As String, address_group_start As String, address_group_end As String)
     ' Group titles and format groups
     
     Dim group_range As Range
@@ -146,7 +157,7 @@ Sub group_titles(base_title As String, address_group_start As String, address_gr
     End Select
 End Sub
 
-Sub add_group_total_formula(start_address As Range, end_address As Range)
+Private Sub add_group_total_formula(start_address As Range, end_address As Range)
     ' Add total formula for the first row of a group and format
     
     end_address.Formula = "=SUM(" & start_address.Address(False, False) & ":" & end_address.Offset(0, -1).Address(False, False) & ")"
@@ -154,7 +165,7 @@ Sub add_group_total_formula(start_address As Range, end_address As Range)
     Call format_calculated_cell(end_address)
 End Sub
 
-Sub add_net_pay_total_formula(address_source_total As Range, address_before_tax_total As Range, address_after_tax_total As Range, address_tax_total As Range, address_net_pay As Range)
+Private Sub add_net_pay_total_formula(address_source_total As Range, address_before_tax_total As Range, address_after_tax_total As Range, address_tax_total As Range, address_net_pay As Range)
     ' Add net pay formula; derive from all address of group "Total" cells
     
     Dim net_pay_formula As String
@@ -181,7 +192,7 @@ Sub add_net_pay_total_formula(address_source_total As Range, address_before_tax_
     Call format_calculated_cell(address_net_pay)
 End Sub
 
-Sub format_calculated_cell(calculated_cell As Range)
+Private Sub format_calculated_cell(calculated_cell As Range)
     ' Format a calculated cell with gray background and regular borders
 
     With calculated_cell.Interior
@@ -209,7 +220,7 @@ Sub format_calculated_cell(calculated_cell As Range)
     End With
 End Sub
 
-Sub add_paycheck_rows(PAYCHECK_ROWS As Integer)
+Private Sub add_paycheck_rows(PAYCHECK_ROWS As Integer)
     ' Adds rows for paychecks
     
     Dim i As Integer
@@ -221,7 +232,7 @@ Sub add_paycheck_rows(PAYCHECK_ROWS As Integer)
     Next i
 End Sub
 
-Sub add_grand_total_formulas(PAYCHECK_ROWS As Integer, last_column As Integer)
+Private Sub add_grand_total_formulas(PAYCHECK_ROWS As Integer, last_column As Integer)
     ' Add total formulas for columns to a grand total row
     
     Dim grand_total_row As Integer
@@ -248,7 +259,7 @@ Sub add_grand_total_formulas(PAYCHECK_ROWS As Integer, last_column As Integer)
     Range(ActiveCell, ActiveCell.Offset(0, last_column - 3)).FillRight
 End Sub
 
-Sub add_stuff_for_dyanmic_pie_charts(PAYCHECK_ROWS As Integer, EARNINGS_COLUMNS As Integer, last_column As Integer)
+Private Sub add_stuff_for_dyanmic_pie_charts(PAYCHECK_ROWS As Integer, EARNINGS_COLUMNS As Integer, last_column As Integer)
     ' Dynamic pie charts require some temp data, named ranges, and deep magic
     
     Dim pie_chart_data_start_row As Integer
@@ -305,17 +316,17 @@ Sub add_stuff_for_dyanmic_pie_charts(PAYCHECK_ROWS As Integer, EARNINGS_COLUMNS 
 
     ' Name ranges for dynamic pie charts
     Range("A" & pie_chart_data_start_row).Offset(2, 2).Activate
-    ActiveWorkbook.Names.add Name:="SourcePieData", RefersToR1C1:="=OFFSET(Sheet1!R" & ActiveCell.row & "C3,0,0,1,MAX(1,COUNT(Sheet1!R" & ActiveCell.row & "C3:R" & ActiveCell.row & "C" & EARNINGS_COLUMNS + 3 & ")))"
-    ActiveWorkbook.Names.add Name:="SourcePieLabels", RefersToR1C1:="=OFFSET(SourcePieData,1,0)"
+    ActiveWorkbook.Names.Add Name:="SourcePieData", RefersToR1C1:="=OFFSET(Sheet1!R" & ActiveCell.row & "C3,0,0,1,MAX(1,COUNT(Sheet1!R" & ActiveCell.row & "C3:R" & ActiveCell.row & "C" & EARNINGS_COLUMNS + 3 & ")))"
+    ActiveWorkbook.Names.Add Name:="SourcePieLabels", RefersToR1C1:="=OFFSET(SourcePieData,1,0)"
     
     Range("A" & pie_chart_data_start_row).Offset(6, 2).Activate
-    ActiveWorkbook.Names.add Name:="DestinationPieData", RefersToR1C1:="=OFFSET(Sheet1!R" & ActiveCell.row & "C" & ActiveCell.Column + earnings_columns_total & ",0,0,1,MAX(1,COUNT(Sheet1!R" & ActiveCell.row & "C" & ActiveCell.Column + earnings_columns_total & ":R" & ActiveCell.row & "C" & ActiveCell.Column + earnings_columns_total + destination_columns_total & ")))"
-    ActiveWorkbook.Names.add Name:="DestinationPieLabels", RefersToR1C1:="=OFFSET(DestinationPieData,1,0)"
+    ActiveWorkbook.Names.Add Name:="DestinationPieData", RefersToR1C1:="=OFFSET(Sheet1!R" & ActiveCell.row & "C" & ActiveCell.Column + earnings_columns_total & ",0,0,1,MAX(1,COUNT(Sheet1!R" & ActiveCell.row & "C" & ActiveCell.Column + earnings_columns_total & ":R" & ActiveCell.row & "C" & ActiveCell.Column + earnings_columns_total + destination_columns_total & ")))"
+    ActiveWorkbook.Names.Add Name:="DestinationPieLabels", RefersToR1C1:="=OFFSET(DestinationPieData,1,0)"
     
     rows(pie_chart_data_start_row & ":" & pie_chart_data_start_row + 7).EntireRow.Hidden = True
 End Sub
 
-Sub fill_dynamic_pie_chart_formula(active_cell As Range, active_cell_offset As Integer)
+Private Sub fill_dynamic_pie_chart_formula(active_cell As Range, active_cell_offset As Integer)
     ' Fill formula for dynamic pie charts
     
     If active_cell_offset <> 0 Then
@@ -323,7 +334,7 @@ Sub fill_dynamic_pie_chart_formula(active_cell As Range, active_cell_offset As I
     End If
 End Sub
 
-Sub add_pie_charts(PAYCHECK_ROWS As Integer)
+Private Sub add_pie_charts(PAYCHECK_ROWS As Integer)
     ' Add dynamic pie charts - one for Pay Source, one for Pay Destination
     
     Dim workbook_name As String
@@ -337,13 +348,13 @@ Sub add_pie_charts(PAYCHECK_ROWS As Integer)
     Call format_pie_chart(workbook_name, ActiveChart, "Pay Destination", "DestinationPieData", "DestinationPieLabels")
 End Sub
 
-Sub format_pie_chart(workbook_name As String, active_chart As Chart, title As String, data As String, labels As String)
+Private Sub format_pie_chart(workbook_name As String, active_chart As Chart, title As String, data As String, labels As String)
     ' Jazz up the pie chart with data, labels, and formatting
     
     active_chart.ChartType = xlPie
     active_chart.HasLegend = False
     active_chart.PlotVisibleOnly = False
-    active_chart.SeriesCollection.add (Worksheets("Sheet1").Range(data))
+    active_chart.SeriesCollection.NewSeries
     active_chart.SeriesCollection(1).Name = title
     active_chart.SeriesCollection(1).Values = (workbook_name & "!" & data)
     active_chart.SeriesCollection(1).XValues = (workbook_name & "!" & labels)
