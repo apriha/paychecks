@@ -23,6 +23,9 @@ Hopefully this workbook will help the user track his or her paychecks and gain a
  4. These are the labels used in the dynamic pie charts
 5. Save the workbook, add paycheck data, insert rows as necessary, and track paychecks.
 
+## Compatibility
+**paychecks** has been successfully tested with Office 2013, Office 2011 for Mac, and Office 2016 for Mac.
+
 ## Example
 Editing the constants as indicated in the code block below results in a workbook with 4 columns for earnings income, 1 column for before tax deductions, 3 columns for taxes, and 26 rows for paycheck data.
 
