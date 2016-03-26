@@ -42,15 +42,19 @@ Public Sub main()
     ' END EDIT CONSTANTS ------------------------------------------------------
     
     Dim last_column As Integer  ' last column of data
-    
+        
+    Application.ScreenUpdating = False
+        
     'Create workbook
     Workbooks.Add
     
     last_column = add_columns(EARNINGS_COLUMNS, BEFORE_TAX_COLUMNS, AFTER_TAX_COLUMNS, TAX_COLUMNS)
     Call add_paycheck_rows(PAYCHECK_ROWS)
     Call add_grand_total_formulas(PAYCHECK_ROWS, last_column)
-    Call add_stuff_for_dyanmic_pie_charts(PAYCHECK_ROWS, EARNINGS_COLUMNS, last_column)
-    Call add_pie_charts(PAYCHECK_ROWS)
+    Call add_stuff_for_dynamic_pie_charts(PAYCHECK_ROWS, EARNINGS_COLUMNS, last_column)
+    Call add_pie_charts
+
+    Application.ScreenUpdating = True
 End Sub
 
 Private Function add_columns(EARNINGS_COLUMNS As Integer, BEFORE_TAX_COLUMNS As Integer, AFTER_TAX_COLUMNS As Integer, TAX_COLUMNS As Integer) As Integer
@@ -259,82 +263,81 @@ Private Sub add_grand_total_formulas(PAYCHECK_ROWS As Integer, last_column As In
     Range(ActiveCell, ActiveCell.Offset(0, last_column - 3)).FillRight
 End Sub
 
-Private Sub add_stuff_for_dyanmic_pie_charts(PAYCHECK_ROWS As Integer, EARNINGS_COLUMNS As Integer, last_column As Integer)
+Private Sub add_stuff_for_dynamic_pie_charts(PAYCHECK_ROWS As Integer, EARNINGS_COLUMNS As Integer, last_column As Integer)
     ' Dynamic pie charts require some temp data, named ranges, and deep magic
     
     Dim pie_chart_data_start_row As Integer
     Dim earnings_columns_total As Integer
     Dim destination_columns_total As Integer
-
+    Dim row_titles_top_cell As Range
+    Dim source_top_left_cell As Range
+    Dim destination_top_left_cell As Range
+    
     pie_chart_data_start_row = PAYCHECK_ROWS + 4 ' paycheck rows + 2 rows for headers + 1 row for grand totals + 1 row for pie_chart_data_start_row
     earnings_columns_total = EARNINGS_COLUMNS + 1 ' earnings columns + 1 column for earnings "Total" column
     destination_columns_total = last_column - earnings_columns_total - 2 ' total columns - total earnings columns - 2 columns for paycheck number and paycheck date
-
-    ' Source temp data
-    Range("A" & pie_chart_data_start_row).Offset(0, 0).Value = "Source Temp Data"
     
-    Range("A" & pie_chart_data_start_row).Offset(0, 2).Activate
-    ActiveCell.FormulaR1C1 = "=IF(R[-" & PAYCHECK_ROWS + 2 & "]C=""Total"", 0, R[-1]C+(COLUMNS(R[-1]C3:R[-1]C)/1000*(R[-1]C<>0)))"
-    Call fill_dynamic_pie_chart_formula(ActiveCell, EARNINGS_COLUMNS)
+    Set row_titles_top_cell = Range("A" & pie_chart_data_start_row)
     
-    Range("A" & pie_chart_data_start_row).Offset(1, 2).Activate
-    ActiveCell.FormulaR1C1 = "=MATCH(SMALL(R[-1],COUNTIF(R[-1],0)+COLUMNS(R[-1]C3:R[-1]C)),R[-1],0)"
-    Call fill_dynamic_pie_chart_formula(ActiveCell, EARNINGS_COLUMNS)
+    ' Title formula rows
+    row_titles_top_cell.Offset(0, 0).Value = "Source Temp Data"
+    row_titles_top_cell.Offset(1, 0).Value = "Source Temp Data"
+    row_titles_top_cell.Offset(2, 0).Value = "Source Data"
+    row_titles_top_cell.Offset(3, 0).Value = "Source Labels"
+    row_titles_top_cell.Offset(4, 0).Value = "Destination Temp Data"
+    row_titles_top_cell.Offset(5, 0).Value = "Destination Temp Data"
+    row_titles_top_cell.Offset(6, 0).Value = "Destination Data"
+    row_titles_top_cell.Offset(7, 0).Value = "Destination Labels"
     
-    ' Source pie chart data / labels
-    Range("A" & pie_chart_data_start_row).Offset(2, 0).Value = "Source Pie Chart Data"
+    ' Source temp data formulas
+    Set source_top_left_cell = Range("A" & pie_chart_data_start_row).Offset(0, 2)
+    source_top_left_cell.Offset(0, 0).FormulaR1C1 = "=IF(R[-" & PAYCHECK_ROWS + 2 & "]C=""Total"", 0, R[-1]C+(COLUMNS(R[-1]C3:R[-1]C)/1000*(R[-1]C<>0)))"
+    source_top_left_cell.Offset(1, 0).FormulaR1C1 = "=MATCH(SMALL(R[-1],COUNTIF(R[-1],0)+COLUMNS(R[-1]C3:R[-1]C)),R[-1],0)"
     
-    Range("A" & pie_chart_data_start_row).Offset(2, 2).Activate
-    ActiveCell.FormulaR1C1 = "=OFFSET(R" & PAYCHECK_ROWS + 2 & "C2,1,MATCH(INDEX(R[-2],SMALL(OFFSET(R[-1]C3,0,0,1,COUNTIF(R[-2],"">0"")),COLUMNS(R[-2]C3:R[-2]C))),R[-2]C3:R[-2]C" & EARNINGS_COLUMNS + 3 & ",0),1,1)"
-    Call fill_dynamic_pie_chart_formula(ActiveCell, EARNINGS_COLUMNS)
+    ' Source pie chart data / label formulas
+    source_top_left_cell.Offset(2, 0).FormulaR1C1 = "=OFFSET(R" & PAYCHECK_ROWS + 2 & "C2,1,MATCH(INDEX(R[-2],SMALL(OFFSET(R[-1]C3,0,0,1,COUNTIF(R[-2],"">0"")),COLUMNS(R[-2]C3:R[-2]C))),R[-2]C3:R[-2]C" & EARNINGS_COLUMNS + 3 & ",0),1,1)"
+    source_top_left_cell.Offset(3, 0).FormulaR1C1 = "=OFFSET(R[-" & PAYCHECK_ROWS + 5 & "]C2,0,MATCH(INDEX(R[-3],1,SMALL(OFFSET(R[-2]C3,0,0,1,COUNTIF(R[-3],"">0"")),COLUMNS(R[-3]C3:R[-3]C))),R[-3]C3:R[-3]C" & EARNINGS_COLUMNS + 3 & ",0),1,1)"
     
-    Range("A" & pie_chart_data_start_row).Offset(3, 2).Activate
-    ActiveCell.FormulaR1C1 = "=OFFSET(R[-" & PAYCHECK_ROWS + 5 & "]C2,0,MATCH(INDEX(R[-3],1,SMALL(OFFSET(R[-2]C3,0,0,1,COUNTIF(R[-3],"">0"")),COLUMNS(R[-3]C3:R[-3]C))),R[-3]C3:R[-3]C" & EARNINGS_COLUMNS + 3 & ",0),1,1)"
-    Call fill_dynamic_pie_chart_formula(ActiveCell, EARNINGS_COLUMNS)
+    Call fill_dynamic_pie_chart_formulas(source_top_left_cell, EARNINGS_COLUMNS)
     
-    ' Destination temp data
-    Range("A" & pie_chart_data_start_row).Offset(4, 0).Value = "Destination Temp Data"
-    
-    Range("A" & pie_chart_data_start_row).Offset(4, 2 + EARNINGS_COLUMNS + 1).Activate
+    ' Destination temp data formulas
+    Set destination_top_left_cell = Range("A" & pie_chart_data_start_row).Offset(4, 2 + earnings_columns_total)
+    destination_top_left_cell.Offset(0, 0).Activate
     ActiveCell.FormulaR1C1 = "=IF(R[-" & PAYCHECK_ROWS + 6 & "]C=""Total"", 0, R[-5]C+(COLUMNS(R[-5]C" & ActiveCell.Column & ":R[-5]C)/1000*(R[-5]C<>0)))"
-    Call fill_dynamic_pie_chart_formula(ActiveCell, destination_columns_total - 1)
     
-    Range("A" & pie_chart_data_start_row).Offset(5, 2 + EARNINGS_COLUMNS + 1).Activate
+    destination_top_left_cell.Offset(1, 0).Activate
     ActiveCell.FormulaR1C1 = "=MATCH(SMALL(R[-1],COUNTIF(R[-1],0)+COLUMNS(R[-1]C" & ActiveCell.Column & ":R[-1]C)),R[-1],0)"
-    Call fill_dynamic_pie_chart_formula(ActiveCell, destination_columns_total - 1)
     
-    ' Destination pie chart data / labels
-    Range("A" & pie_chart_data_start_row).Offset(6, 0).Value = "Destination Pie Chart Data"
-    
-    Range("A" & pie_chart_data_start_row).Offset(6, 2 + earnings_columns_total).Activate
+    ' Destination pie chart data / label formulas
+    destination_top_left_cell.Offset(2, 0).Activate
     ActiveCell.FormulaR1C1 = "=OFFSET(R" & PAYCHECK_ROWS + 2 & "C" & ActiveCell.Column - 1 & ",1,MATCH(INDEX(R[-2],SMALL(OFFSET(R[-1]C" & ActiveCell.Column & ",0,0,1,COUNTIF(R[-2],"">0"")),COLUMNS(R[-2]C:R[-2]C" & ActiveCell.Column & "))),R[-2]C" & ActiveCell.Column & ":R[-2]C" & ActiveCell.Column + destination_columns_total - 1 & ",0),1,1)"
-    Call fill_dynamic_pie_chart_formula(ActiveCell, destination_columns_total - 1)
     
-    Range("A" & pie_chart_data_start_row).Offset(7, 2 + earnings_columns_total).Activate
+    destination_top_left_cell.Offset(3, 0).Activate
     ActiveCell.FormulaR1C1 = "=OFFSET(R[-" & PAYCHECK_ROWS + 9 & "]C" & ActiveCell.Column - 1 & ",0,MATCH(INDEX(R[-3],1,SMALL(OFFSET(R[-2]C" & ActiveCell.Column & ",0,0,1,COUNTIF(R[-3],"">0"")),COLUMNS(R[-3]C" & ActiveCell.Column & ":R[-3]C))),R[-3]C" & ActiveCell.Column & ":R[-3]C" & ActiveCell.Column + destination_columns_total - 1 & ",0),1,1)"
-    Call fill_dynamic_pie_chart_formula(ActiveCell, destination_columns_total - 1)
+    
+    Call fill_dynamic_pie_chart_formulas(destination_top_left_cell, destination_columns_total - 1)
 
     ' Name ranges for dynamic pie charts
-    Range("A" & pie_chart_data_start_row).Offset(2, 2).Activate
-    ActiveWorkbook.Names.Add Name:="SourcePieData", RefersToR1C1:="=OFFSET(Sheet1!R" & ActiveCell.row & "C3,0,0,1,MAX(1,COUNT(Sheet1!R" & ActiveCell.row & "C3:R" & ActiveCell.row & "C" & EARNINGS_COLUMNS + 3 & ")))"
+    source_top_left_cell.Offset(2, 0).Activate
+    ActiveWorkbook.Names.Add Name:="SourcePieData", RefersToR1C1:="=OFFSET(Sheet1!R" & ActiveCell.Row & "C3,0,0,1,MAX(1,COUNT(Sheet1!R" & ActiveCell.Row & "C3:R" & ActiveCell.Row & "C" & EARNINGS_COLUMNS + 3 & ")))"
     ActiveWorkbook.Names.Add Name:="SourcePieLabels", RefersToR1C1:="=OFFSET(SourcePieData,1,0)"
     
-    Range("A" & pie_chart_data_start_row).Offset(6, 2).Activate
-    ActiveWorkbook.Names.Add Name:="DestinationPieData", RefersToR1C1:="=OFFSET(Sheet1!R" & ActiveCell.row & "C" & ActiveCell.Column + earnings_columns_total & ",0,0,1,MAX(1,COUNT(Sheet1!R" & ActiveCell.row & "C" & ActiveCell.Column + earnings_columns_total & ":R" & ActiveCell.row & "C" & ActiveCell.Column + earnings_columns_total + destination_columns_total & ")))"
+    source_top_left_cell.Offset(6, 0).Activate
+    ActiveWorkbook.Names.Add Name:="DestinationPieData", RefersToR1C1:="=OFFSET(Sheet1!R" & ActiveCell.Row & "C" & ActiveCell.Column + earnings_columns_total & ",0,0,1,MAX(1,COUNT(Sheet1!R" & ActiveCell.Row & "C" & ActiveCell.Column + earnings_columns_total & ":R" & ActiveCell.Row & "C" & ActiveCell.Column + earnings_columns_total + destination_columns_total & ")))"
     ActiveWorkbook.Names.Add Name:="DestinationPieLabels", RefersToR1C1:="=OFFSET(DestinationPieData,1,0)"
     
-    rows(pie_chart_data_start_row & ":" & pie_chart_data_start_row + 7).EntireRow.Hidden = True
+    Rows(pie_chart_data_start_row & ":" & pie_chart_data_start_row + 7).EntireRow.Hidden = True
 End Sub
 
-Private Sub fill_dynamic_pie_chart_formula(active_cell As Range, active_cell_offset As Integer)
-    ' Fill formula for dynamic pie charts
+Private Sub fill_dynamic_pie_chart_formulas(top_left_cell As Range, columns As Integer)
+    ' Fill formulas for dynamic pie charts
     
-    If active_cell_offset <> 0 Then
-        Range(active_cell, active_cell.Offset(0, active_cell_offset)).FillRight
+    If columns <> 0 Then
+        Range(top_left_cell, top_left_cell.Offset(3, columns)).FillRight
     End If
 End Sub
 
-Private Sub add_pie_charts(PAYCHECK_ROWS As Integer)
+Private Sub add_pie_charts()
     ' Add dynamic pie charts - one for Pay Source, one for Pay Destination
     
     Dim workbook_name As String
