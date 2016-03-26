@@ -6,7 +6,7 @@ Option Explicit
 ' VBA code to generate an Excel workbook with dynamic pie charts for
 ' tracking paychecks
 '
-' Usage: Import into Excel's Visual Basic Editor and run Main()
+' Usage: Import into Excel's Visual Basic Editor and run main
 '
 ' Copyright (C) 2016, Andrew Riha
 '
@@ -24,7 +24,7 @@ Option Explicit
 ' along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ' *****************************************************************************
 
-Public Sub Main()
+Public Sub main()
 ' Generates a workbook with dynamic pie charts for tracking paychecks
 ' Note: May need to close all workbooks before running
 
@@ -64,43 +64,43 @@ Private Function add_columns(EARNINGS_COLUMNS As Integer, BEFORE_TAX_COLUMNS As 
     '   Output:
     '       Integer, column number of Net Pay column (last column of data)
     
-    Dim address_earnings_total As Range
-    Dim address_before_tax_total As Range
-    Dim address_after_tax_total As Range
-    Dim address_tax_total As Range
-    Dim address_net_pay As Range
+    Dim earnings_total_cell As Range
+    Dim before_tax_total_cell As Range
+    Dim after_tax_total_cell As Range
+    Dim tax_total_cell As Range
+    Dim net_pay_cell As Range
 
     Range("A2").Value = "Paycheck Number"
     Range("B2").Value = "Date"
     
-    Set address_earnings_total = add_column_group(Range("B2"), "Earnings", EARNINGS_COLUMNS)
-    Set address_before_tax_total = add_column_group(address_earnings_total, "Before Tax", BEFORE_TAX_COLUMNS)
-    Set address_after_tax_total = add_column_group(address_before_tax_total, "After Tax", AFTER_TAX_COLUMNS)
-    Set address_tax_total = add_column_group(address_after_tax_total, "Tax", TAX_COLUMNS)
-    Set address_net_pay = add_column_group(address_tax_total, "Net Pay", 1)
+    Set earnings_total_cell = add_column_group(Range("B2"), "Earnings", EARNINGS_COLUMNS)
+    Set before_tax_total_cell = add_column_group(earnings_total_cell, "Before Tax", BEFORE_TAX_COLUMNS)
+    Set after_tax_total_cell = add_column_group(before_tax_total_cell, "After Tax", AFTER_TAX_COLUMNS)
+    Set tax_total_cell = add_column_group(after_tax_total_cell, "Tax", TAX_COLUMNS)
+    Set net_pay_cell = add_column_group(tax_total_cell, "Net Pay", 1)
     
-    Call add_net_pay_total_formula(address_earnings_total.Offset(1, 0), address_before_tax_total.Offset(1, 0), address_after_tax_total.Offset(1, 0), address_tax_total.Offset(1, 0), address_net_pay.Offset(1, 0))
+    Call add_net_pay_total_formula(earnings_total_cell.Offset(1, 0), before_tax_total_cell.Offset(1, 0), after_tax_total_cell.Offset(1, 0), tax_total_cell.Offset(1, 0), net_pay_cell.Offset(1, 0))
     
-    rows("1:2").Font.Bold = True
+    Rows("1:2").Font.Bold = True
     
-    add_columns = address_net_pay.Column
+    add_columns = net_pay_cell.Column
 End Function
 
-Private Function add_column_group(address_previous_total As Range, base_title As String, columns As Integer) As Range
+Private Function add_column_group(previous_total_cell As Range, base_title As String, columns As Integer) As Range
     ' Add paycheck columns to workbook, group columns of same type, and add total formula for groups
     '
     '   Inputs:
-    '       address_previous_total: Range, cell of previous "Total" value
+    '       previous_total: Range, cell of previous "Total" value
     '       base_title: String, title used for columns and group of columns
     '       columns: Integer, columns to add for base_title group
     '   Output:
-    '       Range, address of group's last header cell (i.e., "Total" cell or "Net Pay" cell)
+    '       Range, cell of group's last header cell (i.e., "Total" cell or "Net Pay" cell)
     
     Dim i As Integer
     Dim address_group_start As String
     Dim address_group_end As String
     
-    address_previous_total.Activate
+    previous_total_cell.Activate
     
     If base_title = "Net Pay" Then
         ActiveCell.Offset(0, 1).Activate
@@ -150,46 +150,46 @@ Private Sub group_titles(base_title As String, address_group_start As String, ad
             group_range.Interior.Color = RGB(204, 255, 255)  ' lightblue CCFFFF
         Case "Tax"
             group_range.Value = "Taxes"
-            group_range.Interior.Color = RGB(255, 204, 153)  ' tan FFCC99
+            group_range.Interior.Color = RGB(255, 204, 153)  ' tan FFCC99
         Case "Net Pay"
             group_range.Value = "Net Pay"
             group_range.Interior.Color = RGB(252, 203, 44)  ' gold FFCC00
     End Select
 End Sub
 
-Private Sub add_group_total_formula(start_address As Range, end_address As Range)
+Private Sub add_group_total_formula(start_cell As Range, end_cell As Range)
     ' Add total formula for the first row of a group and format
     
-    end_address.Formula = "=SUM(" & start_address.Address(False, False) & ":" & end_address.Offset(0, -1).Address(False, False) & ")"
-    Range(start_address, end_address).NumberFormat = "$#,##0.00"
-    Call format_calculated_cell(end_address)
+    end_cell.Formula = "=SUM(" & start_cell.Address(False, False) & ":" & end_cell.Offset(0, -1).Address(False, False) & ")"
+    Range(start_cell, end_cell).NumberFormat = "$#,##0.00"
+    Call format_calculated_cell(end_cell)
 End Sub
 
-Private Sub add_net_pay_total_formula(address_source_total As Range, address_before_tax_total As Range, address_after_tax_total As Range, address_tax_total As Range, address_net_pay As Range)
+Private Sub add_net_pay_total_formula(source_total_cell As Range, before_tax_total_cell As Range, after_tax_total_cell As Range, tax_total_cell As Range, net_pay_cell As Range)
     ' Add net pay formula; derive from all address of group "Total" cells
     
     Dim net_pay_formula As String
 
-    net_pay_formula = "=(" & address_source_total.Address(False, False)
+    net_pay_formula = "=(" & source_total_cell.Address(False, False)
     
     ' If a group does not have any columns, the address will be the same as the previous group
-    If address_source_total.Address <> address_before_tax_total.Address Then
-        net_pay_formula = net_pay_formula & "-" & address_before_tax_total.Address(False, False)
+    If source_total_cell.Address <> before_tax_total_cell.Address Then
+        net_pay_formula = net_pay_formula & "-" & before_tax_total_cell.Address(False, False)
     End If
     
-    If address_before_tax_total.Address <> address_after_tax_total.Address Then
-        net_pay_formula = net_pay_formula & "-" & address_after_tax_total.Address(False, False)
+    If before_tax_total_cell.Address <> after_tax_total_cell.Address Then
+        net_pay_formula = net_pay_formula & "-" & after_tax_total_cell.Address(False, False)
     End If
     
-    If address_after_tax_total.Address <> address_tax_total.Address Then
-        net_pay_formula = net_pay_formula & "-" & address_tax_total.Address(False, False)
+    If after_tax_total_cell.Address <> tax_total_cell.Address Then
+        net_pay_formula = net_pay_formula & "-" & tax_total_cell.Address(False, False)
     End If
     
     net_pay_formula = net_pay_formula & ")"
     
-    address_net_pay.Formula = net_pay_formula
+    net_pay_cell.Formula = net_pay_formula
     
-    Call format_calculated_cell(address_net_pay)
+    Call format_calculated_cell(net_pay_cell)
 End Sub
 
 Private Sub format_calculated_cell(calculated_cell As Range)
