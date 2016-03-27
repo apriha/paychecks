@@ -310,7 +310,7 @@ Private Sub add_stuff_for_dynamic_pie_charts(PAYCHECK_ROWS As Integer, EARNINGS_
     
     ' Destination pie chart data / label formulas
     destination_top_left_cell.Offset(2, 0).Activate
-    ActiveCell.FormulaR1C1 = "=OFFSET(R" & PAYCHECK_ROWS + 2 & "C" & ActiveCell.Column - 1 & ",1,MATCH(INDEX(R[-2],SMALL(OFFSET(R[-1]C" & ActiveCell.Column & ",0,0,1,COUNTIF(R[-2],"">0"")),COLUMNS(R[-2]C:R[-2]C" & ActiveCell.Column & "))),R[-2]C" & ActiveCell.Column & ":R[-2]C" & ActiveCell.Column + destination_columns_total - 1 & ",0),1,1)"
+    ActiveCell.FormulaR1C1 = "=OFFSET(R" & PAYCHECK_ROWS + 2 & "C" & ActiveCell.Column - 1 & ",1,MATCH(INDEX(R[-2],SMALL(OFFSET(R[-1]C" & ActiveCell.Column & ",0,0,1,COUNTIF(R[-2],"">0"")),COLUMNS(R[-2]C" & ActiveCell.Column & ":R[-2]C))),R[-2]C" & ActiveCell.Column & ":R[-2]C" & ActiveCell.Column + destination_columns_total - 1 & ",0),1,1)"
     
     destination_top_left_cell.Offset(3, 0).Activate
     ActiveCell.FormulaR1C1 = "=OFFSET(R[-" & PAYCHECK_ROWS + 9 & "]C" & ActiveCell.Column - 1 & ",0,MATCH(INDEX(R[-3],1,SMALL(OFFSET(R[-2]C" & ActiveCell.Column & ",0,0,1,COUNTIF(R[-3],"">0"")),COLUMNS(R[-3]C" & ActiveCell.Column & ":R[-3]C))),R[-3]C" & ActiveCell.Column & ":R[-3]C" & ActiveCell.Column + destination_columns_total - 1 & ",0),1,1)"
